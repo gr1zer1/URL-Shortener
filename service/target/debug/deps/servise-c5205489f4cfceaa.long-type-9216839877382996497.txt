@@ -1,0 +1,2 @@
+fn(State<AppState>, axum::extract::Query<std::string::String>) -> impl std::future::Future<Output = Result<(StatusCode, LinkModel), AppError>> {new_link}
+fn(State<AppState>, axum::extract::Query<std::string::String>) -> impl std::future::Future<Output = Result<(StatusCode, LinkModel), AppError>> {new_link}: Handler<_, _>
