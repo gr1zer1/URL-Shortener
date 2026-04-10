@@ -1,2 +1,0 @@
-fn(State<AppState>) -> impl std::future::Future<Output = Result<Vec<LinkModel>, AppError>> {get_all_links}
-fn(State<AppState>) -> impl std::future::Future<Output = Result<Vec<LinkModel>, AppError>> {get_all_links}: Handler<_, _>
