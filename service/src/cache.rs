@@ -16,8 +16,8 @@ pub async fn get_cached_url(
 
 pub async fn set_cached_url(
     client:&Client,
-    url:String,
     code:String,
+    url:String,
 ) -> Result<(),AppError>{
 
     let mut conn = client.get_multiplexed_async_connection().await?;

@@ -47,7 +47,7 @@ async fn redirect(
         Some(url) => url,
         None => {
             let link = get_link_by_code(&state.db, code.clone()).await?;
-            set_cached_url(&state.redis, link.url.clone(), code).await?;
+            set_cached_url(&state.redis, code,link.url.clone()).await?;
             link.url
         }
     };
