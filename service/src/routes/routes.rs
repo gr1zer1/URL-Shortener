@@ -7,7 +7,7 @@ use crate::db::*;
 use crate::errors::AppError;
 use crate::models::LinkModel;
 use crate::schemas::*;
-
+use crate::cache::*;
 use crate::state::AppState;
 
 pub async fn root() -> &'static str {
@@ -40,18 +40,19 @@ async fn get_all_links(
 }
 
 async fn redirect(
-        Path(code):Path<String>,
-        State(state):State<AppState>
-    ) -> Result<impl IntoResponse, AppError>{
+    Path(code): Path<String>,
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppError> {
+    let url = match get_cached_url(&state.redis, code.clone()).await? {
+        Some(url) => url,
+        None => {
+            let link = get_link_by_code(&state.db, code.clone()).await?;
+            set_cached_url(&state.redis, link.url.clone(), code).await?;
+            link.url
+        }
+    };
 
-    let pool = &state.db;
-
-    let query = get_link_by_code(pool, code).await?;
-
-
-
-    Ok(Redirect::permanent(&query.url))
-
+    Ok(Redirect::permanent(&url))
 }
 
 
@@ -62,3 +63,4 @@ pub fn app() -> Router<AppState> {
         .route("/{code}", get(redirect))
         
 }
+
