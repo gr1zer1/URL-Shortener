@@ -32,8 +32,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
    analytic_db:
-    image:
-     postgres:16
+    image: postgres:16
     ports:
       - "5433:5432"
     env_file:
@@ -61,6 +60,8 @@ services:
       - b_network
     depends_on:
      analytic_db:
+      condition: service_healthy
+     redis:
       condition: service_healthy
    redis:
     image: redis:7-alpine

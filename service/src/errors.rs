@@ -20,8 +20,8 @@ pub enum AppError{
 impl IntoResponse for AppError{
 
     fn into_response(self) -> Response<Body>{
-        
-        let (code,massage) = match self{
+
+        let (code,message) = match self{
             AppError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR,"Database Error when creating link"),
             AppError::NotFound => (StatusCode::NOT_FOUND,"Invalid data"),
             AppError::CacheError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Cache error"),
@@ -30,7 +30,7 @@ impl IntoResponse for AppError{
 
         };
 
-        (code,massage).into_response()
+        (code,message).into_response()
 
     }
 

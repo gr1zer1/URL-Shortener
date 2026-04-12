@@ -1,13 +1,18 @@
-import redis.asyncio as redis
 import json
-from .schemas import LinkSchema
-from pydantic import ValidationError
-from core.models import LinkModel
-from sqlalchemy import update
+
+import redis.asyncio as redis
 from core.db import db_helper
+from core.config import config
+from core.models import LinkModel
+from pydantic import ValidationError
+from sqlalchemy import update
+
+
+from .schemas import LinkSchema
+
 
 async def create_connection():
-    conn = redis.Redis(host="redis", port=6379, decode_responses=True)
+    conn = redis.from_url(config.redis_url, decode_responses=True)
     async with db_helper.session_factory() as session:
         while True:
             queue, data = await conn.brpop(["analytics:clicks"], timeout=0)
@@ -17,11 +22,11 @@ async def create_connection():
                 stmt = (
                     update(LinkModel)
                     .where(LinkModel.code == res.code)
-                    .values(clicks=LinkModel.clicks + 1, last_click=res.last_click)
+                    .values(clicks=LinkModel.clicks + 1, last_click=res.timestamp)
                 )
                 result = await session.execute(stmt)
                 if result.rowcount == 0:
-                    link = LinkModel(code=res.code, clicks=1, last_click=res.last_click)
+                    link = LinkModel(code=res.code, clicks=1, last_click=res.timestamp)
                     session.add(link)
                 await session.commit()
             except (json.JSONDecodeError, ValidationError) as e:

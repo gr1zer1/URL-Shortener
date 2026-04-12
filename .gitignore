@@ -1,3 +1,4 @@
 /service/target
 /service/Cargo.lock
 /.env
+/analytics/alembic.ini

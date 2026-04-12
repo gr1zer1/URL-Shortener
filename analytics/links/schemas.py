@@ -1,11 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class LinkSchema(BaseModel):
-    code:str
-    clicks:int
-    timestamp:str
+    code: str
+    timestamp: str
+
 
 class LinkResponseSchema(BaseModel):
-    code:str
-    clicks:int
-    last_click:str
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    clicks: int
+    last_click: str
