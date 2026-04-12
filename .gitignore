@@ -2,3 +2,6 @@
 /service/Cargo.lock
 /.env
 /analytics/alembic.ini
+.venv/
+__pycache__/
+*.pyc
