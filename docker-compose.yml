@@ -1,4 +1,17 @@
 services:
+   shortener:
+    build: service/.
+    env_file:
+     - .env
+    ports:
+     - "8080:8080"
+    networks:
+      - b_network
+    depends_on:
+     db:
+      condition: service_healthy
+     redis:                          
+      condition: service_healthy
    db:
     image: postgres:16
     ports:
@@ -12,20 +25,58 @@ services:
     networks:
       - b_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d app -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
     volumes:
       - db_data:/var/lib/postgresql/data
+   analytic_db:
+    image:
+     postgres:16
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_ANALYTICS}
+      POSTGRES_USER: ${POSTGRES_USER_ANALYTICS}
+      POSTGRES_DB: ${POSTGRES_DB_ANALYTICS}
+    networks:
+      - b_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER_ANALYTICS -d $POSTGRES_DB_ANALYTICS"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - analytic_db_data:/var/lib/postgresql/data
+   analytics:
+    build: analytics/.
+    env_file:
+     - .env
+    ports:
+     - "8081:8081"
+    networks:
+      - b_network
+    depends_on:
+     analytic_db:
+      condition: service_healthy
    redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:                                      
+      test: ["CMD", "redis-cli", "ping"]              
+      interval: 5s                                    
+      timeout: 5s                                     
+      retries: 5 
     networks:
       - b_network
 volumes:
   db_data:
+   driver: local
+  analytic_db_data:
    driver: local
 networks:
   b_network:

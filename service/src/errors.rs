@@ -11,7 +11,9 @@ pub enum AppError{
     #[error("Cache error: {0}")]
     CacheError(String),
     #[error("Redis error: {0}")]
-    RedisError(#[from] redis::RedisError)
+    RedisError(#[from] redis::RedisError),
+    #[error("Serde json error: {0}")]
+    SerdeJsonError(#[from] serde_json::Error)
 
 }
 
@@ -23,7 +25,9 @@ impl IntoResponse for AppError{
             AppError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR,"Database Error when creating link"),
             AppError::NotFound => (StatusCode::NOT_FOUND,"Invalid data"),
             AppError::CacheError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Cache error"),
-            AppError::RedisError(_) => (StatusCode::INTERNAL_SERVER_ERROR,"Redis Error")
+            AppError::RedisError(_) => (StatusCode::INTERNAL_SERVER_ERROR,"Redis Error"),
+            AppError::SerdeJsonError(_) => (StatusCode::INTERNAL_SERVER_ERROR,"Redis Error"),
+
         };
 
         (code,massage).into_response()

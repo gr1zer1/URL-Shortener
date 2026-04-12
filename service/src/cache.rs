@@ -20,8 +20,30 @@ pub async fn set_cached_url(
     url:String,
 ) -> Result<(),AppError>{
 
+    let ttl = std::env::var("REDIS_EXP")
+        .expect("REDIS_EXP must be set")
+        .parse::<u64>()
+        .expect("Parse Error");
+
     let mut conn = client.get_multiplexed_async_connection().await?;
 
-    Ok(conn.set_ex(code,url,3600).await?)
+    Ok(conn.set_ex(code,url,ttl).await?)
+
+}
+
+pub async fn add_click(
+    code:String,
+    client:&Client,
+) -> Result<(),AppError>{
+    let mut conn = client.get_multiplexed_async_connection().await?;
+    
+    let payload = serde_json::to_string(&serde_json::json!({
+        "code": code,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    }))?;
+
+    conn.lpush::<_, _, ()>("analytics:clicks", payload).await?;
+    
+    Ok(())
 
 }
